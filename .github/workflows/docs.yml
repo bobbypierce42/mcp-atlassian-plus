@@ -46,3 +46,24 @@ jobs:
       run: |
         uv run python scripts/generate_tool_docs.py
         git diff --exit-code -- docs/tools/ docs/tools-reference.mdx
+
+  helm:
+    name: Helm chart validation
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: kalana-ci
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.19.0
+      - name: Lint and render all supported transport modes
+        shell: bash
+        run: |
+          for transport in stdio sse streamable-http; do
+            helm lint helm --strict --set "transport=$transport"
+            helm template ci helm --set "transport=$transport" > /dev/null
+          done
+          helm template ci helm --set transport=streamable-http --set ingress.enabled=true --set rbac.create=false > /dev/null
