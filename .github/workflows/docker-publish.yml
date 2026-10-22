@@ -15,7 +15,7 @@ env:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: kalana-ci
     permissions:
       contents: read  # Needed for checkout
       packages: write # Needed to push packages to ghcr.io
